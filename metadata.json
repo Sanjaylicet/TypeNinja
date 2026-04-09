@@ -1,0 +1,5 @@
+{
+  "name": "TypeNinja",
+  "description": "A minimal, static typing test application built for zero-cost AWS hosting.",
+  "requestFramePermissions": []
+}

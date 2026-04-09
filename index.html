@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeNinja | Minimal Typing Test</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #646669;
+            --main-color: #e2b714;
+            --error-color: #ca4754;
+            --sub-color: #323437;
+            --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: color 0.2s ease;
+        }
+
+        #app {
+            max-width: 1000px;
+            width: 90%;
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 2rem;
+            color: var(--main-color);
+            font-weight: 500;
+            letter-spacing: -1px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .stat-item span {
+            color: var(--main-color);
+        }
+
+        #typing-area {
+            font-size: 1.5rem;
+            line-height: 1.5;
+            position: relative;
+            user-select: none;
+            outline: none;
+            height: 150px;
+            overflow: hidden;
+        }
+
+        .word {
+            display: inline-block;
+            margin-right: 0.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .char {
+            position: relative;
+        }
+
+        .char.correct {
+            color: #d1d0c5;
+        }
+
+        .char.incorrect {
+            color: var(--error-color);
+            text-decoration: underline;
+        }
+
+        .char.current::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 2px;
+            height: 1.2em;
+            background-color: var(--main-color);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        #hidden-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #result-screen {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .result-card {
+            background: var(--sub-color);
+            padding: 2rem;
+            border-radius: 8px;
+        }
+
+        .result-value {
+            font-size: 3rem;
+            color: var(--main-color);
+            display: block;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--sub-color);
+            color: var(--text-color);
+            padding: 0.8rem 2rem;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--sub-color);
+            color: var(--main-color);
+        }
+
+        .high-score {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header id="header">
+            <div class="logo">TypeNinja</div>
+            <div class="stats">
+                <div class="stat-item">time: <span id="timer">60</span></div>
+            </div>
+        </header>
+
+        <div id="test-screen">
+            <div id="typing-area" tabindex="0"></div>
+            <input type="text" id="hidden-input" autocomplete="off" autofocus>
+        </div>
+
+        <div id="result-screen">
+            <div class="logo">Results</div>
+            <div class="result-grid">
+                <div class="result-card">
+                    <span class="result-value" id="wpm-result">0</span>
+                    <span class="result-label">wpm</span>
+                </div>
+                <div class="result-card">
+                    <span class="result-value" id="accuracy-result">0%</span>
+                    <span class="result-label">accuracy</span>
+                </div>
+            </div>
+            <button onclick="resetTest()">Restart Test</button>
+            <div class="high-score">All-time High: <span id="high-score-val">0</span> WPM</div>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also", "back", "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", "new", "want", "because", "any", "these", "give", "day", "most", "us"
+        ];
+
+        let currentWordIndex = 0;
+        let currentCharIndex = 0;
+        let timeLeft = 60;
+        let timer = null;
+        let isTestRunning = false;
+        let totalCharsTyped = 0;
+        let correctCharsTyped = 0;
+
+        const typingArea = document.getElementById('typing-area');
+        const hiddenInput = document.getElementById('hidden-input');
+        const timerDisplay = document.getElementById('timer');
+        const testScreen = document.getElementById('test-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const wpmResult = document.getElementById('wpm-result');
+        const accuracyResult = document.getElementById('accuracy-result');
+        const highScoreVal = document.getElementById('high-score-val');
+
+        function initTest() {
+            typingArea.innerHTML = '';
+            const shuffled = [...words].sort(() => Math.random() - 0.5);
+            shuffled.forEach((word, wIdx) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.className = 'word';
+                wordSpan.id = `word-${wIdx}`;
+                word.split('').forEach((char, cIdx) => {
+                    const charSpan = document.createElement('span');
+                    charSpan.className = 'char';
+                    charSpan.textContent = char;
+                    wordSpan.appendChild(charSpan);
+                });
+                // Add space char
+                const spaceSpan = document.createElement('span');
+                spaceSpan.className = 'char';
+                spaceSpan.textContent = ' ';
+                wordSpan.appendChild(spaceSpan);
+                typingArea.appendChild(wordSpan);
+            });
+            
+            currentWordIndex = 0;
+            currentCharIndex = 0;
+            updateCursor();
+            
+            const high = localStorage.getItem('typeninja-high-score') || 0;
+            highScoreVal.textContent = high;
+        }
+
+        function updateCursor() {
+            document.querySelectorAll('.char.current').forEach(el => el.classList.remove('current'));
+            const currentWord = document.getElementById(`word-${currentWordIndex}`);
+            if (currentWord) {
+                const currentChar = currentWord.children[currentCharIndex];
+                if (currentChar) {
+                    currentChar.classList.add('current');
+                    // Scroll into view if needed
+                    if (currentChar.offsetTop > typingArea.scrollTop + 100) {
+                        typingArea.scrollTop = currentChar.offsetTop - 50;
+                    }
+                }
+            }
+        }
+
+        function startTimer() {
+            isTestRunning = true;
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endTest();
+                }
+            }, 1000);
+        }
+
+        function endTest() {
+            clearInterval(timer);
+            isTestRunning = false;
+            testScreen.style.display = 'none';
+            document.getElementById('header').style.display = 'none';
+            resultScreen.style.display = 'block';
+
+            const wpm = Math.round((correctCharsTyped / 5) / (60 / 60)); // Simplified WPM
+            const accuracy = totalCharsTyped > 0 ? Math.round((correctCharsTyped / totalCharsTyped) * 100) : 0;
+
+            wpmResult.textContent = wpm;
+            accuracyResult.textContent = accuracy + '%';
+
+            const currentHigh = localStorage.getItem('typeninja-high-score') || 0;
+            if (wpm > currentHigh) {
+                localStorage.setItem('typeninja-high-score', wpm);
+                highScoreVal.textContent = wpm;
+            }
+        }
+
+        function resetTest() {
+            timeLeft = 60;
+            timerDisplay.textContent = timeLeft;
+            testScreen.style.display = 'block';
+            document.getElementById('header').style.display = 'flex';
+            resultScreen.style.display = 'none';
+            totalCharsTyped = 0;
+            correctCharsTyped = 0;
+            typingArea.scrollTop = 0;
+            initTest();
+            hiddenInput.value = '';
+            hiddenInput.focus();
+        }
+
+        typingArea.addEventListener('click', () => hiddenInput.focus());
+
+        hiddenInput.addEventListener('input', (e) => {
+            if (!isTestRunning && timeLeft === 60) {
+                startTimer();
+            }
+
+            const val = e.target.value;
+            const lastChar = val[val.length - 1];
+            
+            const currentWordEl = document.getElementById(`word-${currentWordIndex}`);
+            const chars = currentWordEl.children;
+            const targetChar = chars[currentCharIndex].textContent;
+
+            totalCharsTyped++;
+
+            if (lastChar === targetChar) {
+                chars[currentCharIndex].classList.add('correct');
+                correctCharsTyped++;
+            } else {
+                chars[currentCharIndex].classList.add('incorrect');
+            }
+
+            currentCharIndex++;
+            if (currentCharIndex >= chars.length) {
+                currentWordIndex++;
+                currentCharIndex = 0;
+            }
+
+            updateCursor();
+            e.target.value = ''; // Clear input for next char
+        });
+
+        // Prevent backspace or other keys if needed, but here we just handle input
+        initTest();
+    </script>
+</body>
+</html>
+
