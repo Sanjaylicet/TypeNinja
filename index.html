@@ -6,15 +6,18 @@
     <title>TypeNinja | Minimal Typing Test</title>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --text-color: #646669;
-            --main-color: #e2b714;
-            --error-color: #ca4754;
-            --sub-color: #323437;
-            --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+            --bg-color: #FFDE03; /* Vibrant Yellow */
+            --text-color: #000000;
+            --main-color: #00E5FF; /* Cyan */
+            --accent-color: #FF00FF; /* Magenta */
+            --sub-color: #ffffff;
+            --border-width: 6px;
+            --shadow-offset: 12px;
+            --font-main: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap');
 
         * {
             box-sizing: border-box;
@@ -25,89 +28,108 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: var(--font-mono);
+            font-family: var(--font-main);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             overflow: hidden;
-            transition: color 0.2s ease;
+            background-image: radial-gradient(#000 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
         #app {
             max-width: 1000px;
             width: 90%;
             position: relative;
+            padding: 2rem;
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 4rem;
             width: 100%;
         }
 
         .logo {
-            font-size: 2rem;
-            color: var(--main-color);
-            font-weight: 500;
-            letter-spacing: -1px;
+            font-size: 4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: var(--main-color);
+            padding: 1rem 2rem;
+            border: var(--border-width) solid #000;
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px #000;
+            transform: rotate(-3deg);
+            display: inline-block;
         }
 
         .stats {
             display: flex;
             gap: 2rem;
-            font-size: 1.2rem;
         }
 
-        .stat-item span {
-            color: var(--main-color);
+        .stat-item {
+            background: var(--accent-color);
+            padding: 0.8rem 1.5rem;
+            border: var(--border-width) solid #000;
+            box-shadow: 6px 6px 0px #000;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            color: #fff;
+            -webkit-text-stroke: 1px #000;
         }
 
         #typing-area {
-            font-size: 1.5rem;
-            line-height: 1.5;
-            position: relative;
-            user-select: none;
-            outline: none;
-            height: 150px;
+            font-size: 2.2rem;
+            line-height: 1.4;
+            background: var(--sub-color);
+            border: var(--border-width) solid #000;
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px #000;
+            padding: 3rem;
+            height: 300px;
             overflow: hidden;
+            font-family: var(--font-mono);
+            position: relative;
+            transform: rotate(1deg);
         }
 
         .word {
             display: inline-block;
-            margin-right: 0.6rem;
-            margin-bottom: 0.5rem;
+            margin-right: 1rem;
+            margin-bottom: 0.8rem;
         }
 
         .char {
             position: relative;
+            color: #bbb;
+            transition: all 0.05s ease;
         }
 
         .char.correct {
-            color: #d1d0c5;
+            color: var(--text-color);
+            font-weight: 900;
         }
 
         .char.incorrect {
-            color: var(--error-color);
-            text-decoration: underline;
+            background: var(--accent-color);
+            color: #fff;
+            border: 3px solid #000;
+            padding: 0 2px;
         }
 
         .char.current::after {
             content: '';
             position: absolute;
             left: 0;
-            bottom: 0;
-            width: 2px;
-            height: 1.2em;
+            bottom: -4px;
+            width: 100%;
+            height: 8px;
             background-color: var(--main-color);
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            50% { opacity: 0; }
+            border: 2px solid #000;
         }
 
         #hidden-input {
@@ -119,60 +141,84 @@
         #result-screen {
             display: none;
             text-align: center;
-            animation: fadeIn 0.5s ease;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes popIn {
+            from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
         .result-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin: 2rem 0;
+            gap: 3rem;
+            margin: 3rem 0;
         }
 
         .result-card {
-            background: var(--sub-color);
-            padding: 2rem;
-            border-radius: 8px;
+            background: var(--main-color);
+            padding: 3rem;
+            border: var(--border-width) solid #000;
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px #000;
+            transform: rotate(-2deg);
+        }
+
+        .result-card:nth-child(2) {
+            background: var(--accent-color);
+            transform: rotate(2deg);
+            color: #fff;
         }
 
         .result-value {
-            font-size: 3rem;
-            color: var(--main-color);
+            font-size: 6rem;
+            font-weight: 900;
             display: block;
+            line-height: 1;
         }
 
         .result-label {
-            font-size: 0.8rem;
+            font-size: 1.5rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.6;
+            font-weight: 900;
+            letter-spacing: 4px;
         }
 
         button {
-            background: transparent;
-            border: 1px solid var(--sub-color);
-            color: var(--text-color);
-            padding: 0.8rem 2rem;
+            background: #000;
+            color: #fff;
+            border: var(--border-width) solid #000;
+            padding: 1.5rem 4rem;
             font-family: inherit;
+            font-weight: 900;
+            font-size: 2rem;
+            text-transform: uppercase;
             cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.2s ease;
+            box-shadow: 10px 10px 0px var(--main-color);
+            transition: all 0.1s ease;
+            margin-top: 2rem;
         }
 
         button:hover {
-            background: var(--sub-color);
-            color: var(--main-color);
+            transform: translate(-4px, -4px);
+            box-shadow: 14px 14px 0px var(--main-color);
+        }
+
+        button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 6px 6px 0px var(--main-color);
         }
 
         .high-score {
-            margin-top: 2rem;
-            font-size: 0.9rem;
-            opacity: 0.5;
+            margin-top: 4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: #fff;
+            display: inline-block;
+            padding: 1rem 2rem;
+            border: var(--border-width) solid #000;
+            box-shadow: 8px 8px 0px #000;
+            font-size: 1.2rem;
         }
     </style>
 </head>
@@ -319,6 +365,29 @@
         }
 
         typingArea.addEventListener('click', () => hiddenInput.focus());
+
+        hiddenInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                if (!isTestRunning || (currentWordIndex === 0 && currentCharIndex === 0)) return;
+
+                if (currentCharIndex > 0) {
+                    currentCharIndex--;
+                } else if (currentWordIndex > 0) {
+                    currentWordIndex--;
+                    const prevWordEl = document.getElementById(`word-${currentWordIndex}`);
+                    currentCharIndex = prevWordEl.children.length - 1;
+                }
+
+                const currentWordEl = document.getElementById(`word-${currentWordIndex}`);
+                const charEl = currentWordEl.children[currentCharIndex];
+                
+                if (charEl.classList.contains('correct')) {
+                    correctCharsTyped--;
+                }
+                charEl.classList.remove('correct', 'incorrect');
+                updateCursor();
+            }
+        });
 
         hiddenInput.addEventListener('input', (e) => {
             if (!isTestRunning && timeLeft === 60) {
