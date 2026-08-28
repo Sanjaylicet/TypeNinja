@@ -1,5 +1,8 @@
 {
   "name": "TypeNinja",
-  "description": "A minimal, static typing test application built for zero-cost AWS hosting.",
-  "requestFramePermissions": []
+  "description": "Fast typing speed test arena and interactive 5-module touch typing academy.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
