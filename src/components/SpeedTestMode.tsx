@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, BookOpen, GraduationCap, RotateCcw, Sparkles, Trophy, Zap } from 'lucide-react';
+import { ArrowRight, BookOpen, Cloud, GraduationCap, RotateCcw, Sparkles, Trophy, Zap } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
 
 interface SpeedTestModeProps {
   onGoToTraining?: () => void;
   onGoToWeakKeyLab?: () => void;
+  onTestComplete?: (wpm: number, accuracy: number, durationSeconds: number) => void;
+  user?: User | null;
+  onOpenAuthModal?: () => void;
 }
 
 const BENCHMARK_WORDS = [
@@ -21,6 +25,9 @@ const BENCHMARK_WORDS = [
 export const SpeedTestMode: React.FC<SpeedTestModeProps> = ({
   onGoToTraining,
   onGoToWeakKeyLab,
+  onTestComplete,
+  user,
+  onOpenAuthModal,
 }) => {
   const [duration, setDuration] = useState<number>(60);
   const [timeLeft, setTimeLeft] = useState<number>(60);
@@ -90,9 +97,13 @@ export const SpeedTestMode: React.FC<SpeedTestModeProps> = ({
 
     const minutes = duration / 60;
     const finalWpm = Math.round((correctKeystrokes / 5) / minutes);
+    const finalAcc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
     if (finalWpm > highScore) {
       setHighScore(finalWpm);
       localStorage.setItem('typeninja-high-score', finalWpm.toString());
+    }
+    if (onTestComplete) {
+      onTestComplete(finalWpm, finalAcc, duration);
     }
   };
 
@@ -325,6 +336,26 @@ export const SpeedTestMode: React.FC<SpeedTestModeProps> = ({
               <div className="text-[10px] font-bold">Best WPM</div>
             </div>
           </div>
+
+          {!user && onOpenAuthModal && (
+            <div className="max-w-md mx-auto mb-6 p-4 bg-[#FFDE03] brutal-border flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+              <div>
+                <div className="font-black text-xs uppercase flex items-center gap-1.5 text-black">
+                  <Cloud className="w-4 h-4 text-black" />
+                  <span>Don't lose your typing benchmark!</span>
+                </div>
+                <div className="text-[11px] font-bold text-gray-800 mt-0.5">
+                  Sign in or register to sync your records to your Supabase cloud account.
+                </div>
+              </div>
+              <button
+                onClick={onOpenAuthModal}
+                className="px-3 py-1.5 bg-black text-white text-xs font-black uppercase tracking-wider brutal-border hover:bg-neutral-800 shrink-0 brutal-btn-press"
+              >
+                Sync Score
+              </button>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
